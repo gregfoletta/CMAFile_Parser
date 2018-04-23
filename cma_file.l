@@ -1,7 +1,5 @@
 %{
-
-#include <stdio.h>        
-
+ #include "cma_file.tab.h";
 %}
 
 
