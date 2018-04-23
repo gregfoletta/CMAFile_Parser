@@ -1,20 +1,17 @@
+%option noyywrap
 %{
- #include "cma_file.tab.h";
+ #include "cma_file.tab.h"
 %}
 
 
 %%
-"(" { printf("OPEN_PAREN "); }
-")" { printf(" CLOSE_PAREN"); }
-":"[a-zA-Z0-9\._]* { printf("NODE_NAME{%s}", yytext); }
+"(" { return OPEN_PAREN; }
+")" { return CLOSE_PAREN; }
+":"[-a-zA-Z0-9\._]* { return NODE_NAME; }
 
-"\""[^"]*"\"" { printf("QUOTED_TEXT{%s}", yytext); }
-[-a-zA-Z0-9\._@]* { printf("UNQUOTED_TEXT{%s}", yytext); }
+"\""[^"]*"\"" { return QUOTED_TEXT; }
+[-a-zA-Z0-9\._@]* { return UNQUOTED_TEXT; }
+
+[[:space:]+] { }
 
 %%
-
-
-int main(int argc, char **argv) {
-    yylex();
-}
-
