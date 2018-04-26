@@ -1,16 +1,16 @@
 %option noyywrap
 %{
- #include "cma_file.tab.h"
+#include "cma_file.tab.h"
 %}
 
 
 %%
 "(" { return OPEN_PAREN; }
 ")" { return CLOSE_PAREN; }
-":"[-a-zA-Z0-9\._]* { return NODE_NAME; }
+":"[-a-zA-Z0-9\._]* { yylval.str = strdup(yytext); return NAME; }
 
-"\""[^"]*"\"" { return QUOTED_TEXT; }
-[-a-zA-Z0-9\._@]* { return UNQUOTED_TEXT; }
+"\""[^"]*"\"" { yylval.str = strdup(yytext); return QUOTED_TEXT; }
+[-a-zA-Z0-9\._@]* { yylval.str = strdup(yytext); return UNQUOTED_TEXT; }
 
 [[:space:]+] { }
 
