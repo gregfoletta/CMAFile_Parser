@@ -65,6 +65,8 @@ int main(int argc, char **argv) {
 
 int yyerror(char *s) {
     fprintf(stderr, "Error: %s\n", s);
+
+    return 0;
 }
 
 

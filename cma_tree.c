@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <jansson.h>
+#include "include/jansson.h"
 
 #include "cma_tree.h"
 
@@ -47,7 +47,7 @@ void DISABLE_DEBUG(void) { debug = 0; }
 void DEBUG_PRINT(FILE *fd, const char *format, ...) {
     va_list args;
     va_start(args, format);
-    if(debug) { vprintf(format, args); }
+    if(debug) { vfprintf(fd, format, args); }
     va_end(args);
 }
 
@@ -112,7 +112,6 @@ struct cma_entity *create_node(char *key, char *secondary_key, struct list_head 
 struct list_head *add_to_entity_list(struct cma_entity *new, struct list_head *branch_list) {
     DEBUG_PRINT(stderr, "Adding entity with key: '%s' to branch head ptr %p\n", new->key, branch_list);
     struct list_head *head = branch_list;
-    struct cma_entity *i;
 
     //If this is the first entity for this level, init the head.
     if (!head) {
@@ -184,7 +183,7 @@ json_t *tree_to_json(struct list_head *e) {
         /* Each branch is represented as an object, however there is the possibility of
          * overlapping keys within a branch. We first check whether they key has already been created.
          * If it has, then the key points to an array which contain the values. */
-        if (dup_key_val = json_object_get(branch, i->key)) {
+        if ((dup_key_val = json_object_get(branch, i->key))) {
             /* Is it already an array? */
             switch (json_typeof(dup_key_val)) {
             case JSON_OBJECT:
@@ -197,6 +196,10 @@ json_t *tree_to_json(struct list_head *e) {
             case JSON_ARRAY:
                 json_array_append(dup_key_val, value);
                 break;
+
+            default:
+                FATAL_ERROR("JSON Error: duplicate array entry has invalid type");
+                exit(2);
             }
         } else {
             json_object_set(branch, key, value);
