@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>        
+#include <string.h>
 
 #include "cma_tree.h"
 
@@ -25,7 +26,7 @@ int yyerror();
 %%
 
 cma_file: OPEN_PAREN branch CLOSE_PAREN { 
-    printf("%s", json_dumps(print_json($2), 0)); 
+    dump_json($2);
     free_tree($2); 
 }
 
@@ -52,6 +53,13 @@ node
 %%
 
 int main(int argc, char **argv) {
+	int x;
+	for (x = 1; x < argc; x++) {
+		if (!strcmp(argv[x], "-d")) {
+			ENABLE_DEBUG();
+        }
+    }
+
     yyparse();
 }
 
