@@ -17,6 +17,7 @@ Each CMA file is made up of either nodes or leaves. Leaves contain either an unq
         :leaf_a (leaf_value)
     )
 )
+```
 
 ```json
 {
