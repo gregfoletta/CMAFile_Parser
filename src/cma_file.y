@@ -2,7 +2,7 @@
 #include <stdio.h>        
 #include <string.h>
 
-#include "cma_tree.h"
+#include "include/cma_tree.h"
 
 //Forward declarations to remove warnings
 int yylex();
