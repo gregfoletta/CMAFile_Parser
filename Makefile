@@ -1,4 +1,4 @@
-cma_parse: src/cma_file.l src/cma_file.y src/cma_tree.c include/cma_tree.h include/list.h
+cma_parse: src/cma_file.l src/cma_file.y src/cma_tree.c 
 	bison -d src/cma_file.y
 	flex src/cma_file.l
 	gcc -g -o $@ cma_file.tab.c lex.yy.c src/cma_tree.c -lfl -ljansson
