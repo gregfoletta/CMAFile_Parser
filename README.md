@@ -4,12 +4,12 @@ This program takes CheckPoint CMA files and translates them into JSON.
 
 ## Prerequisites
 
-* [flex]() and [bison]().
+* [flex](https://github.com/westes/flex) and [bison](https://www.gnu.org/software/bison/).
 * [jannson]() JSON library.
 
 ## Usage
 
-The `./cma_parser` program reads input from stdin. So you can either redirect from a file (`./cma_parser < path/to/cma/object_5_0.C`, or paste the configuration directly in to the terminal.
+The `./cma_parser` program reads input from stdin. So you can either redirect from a file (`./cma_parser < path/to/cma/object_5_0.C`), or the configuration can be pasted directly in to the terminal.
 
 ## CMA Files
 
@@ -143,6 +143,26 @@ a network object group which has members references in a different part of the f
 ```
 
 ```json
+{
+ "All_Intranet_Gateways": {
+  "AdminInfo": {
+   "ClassName": "network_object_group",
+   "table": "network_objects"
+  },
+  "ReferenceObject": [
+   {
+    "Name": "Berlin_Gateway",
+    "Table": "network_objects",
+    "Uid": "{8AA12D62-B698-4B3B-8A0B-A4CE13A64CAC}"
+   },
+   {
+    "Name": "London_Gateway",
+    "Table": "network_objects",
+    "Uid": "{1C2D9FFC-F412-49B3-85A1-43470D8B4580}"
+   }
+  ]
+ }
+}
 ```
 
 
