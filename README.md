@@ -24,7 +24,47 @@ Use `make` to build the file. There's no installation per-se, the binary build i
 
 The `./cma_parse` program reads input from stdin. So you can either redirect from a file (`./cma_parse < path/to/cma/object_5_0.C`), or the configuration can be pasted directly in to the terminal.
 
-## CMA Files
+## Example
+
+```
+% ./cma_parse < objects_5_0.C
+{
+ "version": "8.0",
+ "globals": {
+  "not_applicable": {
+   "AdminInfo": {
+    "LastModified": {
+     "Time": "Mon Nov 21 16:30:00 2011",
+     "By": "CheckPoint",
+     "From": "CheckPoint"
+    },
+    "chkpf_uid": "{A478A9E4-18FC-4204-AD0D-58EC143A5CE6}",
+    "ClassName": "any_object",
+    "table": "globals",
+    "icon": "Rulebase/na"
+   },
+   "color": "black",
+   "ID": "0",
+   "display_name": "n/a",
+   "description": "Not applicable for rule. Protection is relevant only for rule exception."
+  },
+  "predefined_interface_container": {
+   "AdminInfo": {
+    "chkpf_uid": "{9BEEA09C-AF03-42CE-964F-DAAB829A27C7}",
+    "ClassName": "predefined_interface_container",
+    "table": "globals",
+    "LastModified": {
+     "Time": "Mon Nov  8 15:42:15 2010",
+     "last_modified_utc": "1289230935",
+     "By": "Check Point Security Management Server Update Process",
+     "From": "localhost"
+    },
+    "icon": "Unknown"
+   },
+... continues ...
+```
+
+## CMA File Conversion
 
 This Each CMA file is made up of either nodes or leaves. Leaves hold actual settings, while nodes are contains that hold one or more leaves or nodes.
 
