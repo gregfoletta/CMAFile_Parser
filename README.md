@@ -2,6 +2,10 @@
 
 This program takes CheckPoint CMA files and translates them into JSON. 
 
+## Version
+
+Version 0.2
+
 ## Prerequisites
 
 * [flex](https://github.com/westes/flex) and [bison](https://www.gnu.org/software/bison/).
@@ -12,9 +16,13 @@ This program takes CheckPoint CMA files and translates them into JSON.
 
 Please raise any bugs, issues or feature requests through the [issues page](https://github.com/gregfoletta/CMAFile_Parser/issues).
 
+## Build and Installation
+
+Use `make` to build the file. There's no installation per-se, the binary build is `cma_parse` and you can move it to wherever suits.
+
 ## Usage
 
-The `./cma_parser` program reads input from stdin. So you can either redirect from a file (`./cma_parser < path/to/cma/object_5_0.C`), or the configuration can be pasted directly in to the terminal.
+The `./cma_parse` program reads input from stdin. So you can either redirect from a file (`./cma_parse < path/to/cma/object_5_0.C`), or the configuration can be pasted directly in to the terminal.
 
 ## CMA Files
 
