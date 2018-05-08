@@ -2,22 +2,56 @@
 
 This program takes CheckPoint CMA files and translates them into JSON. 
 
+## Prerequisites
+
+* [flex]() and [bison]().
+* [jannson]() JSON library.
+
+## Usage
+
+The `./cma_parser` program reads input from stdin. So you can either redirect from a file (`./cma_parser < path/to/cma/object_5_0.C`, or paste the configuration directly in to the terminal.
 
 ## CMA Files
 
-Each CMA file is made up of either nodes or leaves. Leaves contain either an unquoted or quoted string which holds a value. Nodes contains leaves and other nodes.
+This Each CMA file is made up of either nodes or leaves. Leaves hold actual settings, while nodes are contains that hold one or more leaves or nodes.
 
-## Node TranslationA
+## Leaf Translation
+
+Leafs are translated directly into key/value pairs, and are members of an object which is their parent node. We also see here that the CMA files start an end with
+parenthesis which become the outer JSON object.
+
+All values are considered JSON strings, so the quoted values have their quotes stripped. So :leaf ("A value.") becomes { "leaf": "A value." } rather than { "leaf": "\"A value.\"" }.
+```
+(
+	:leaf_a (unquoted_value_a)
+	:leaf_b ("quoted value b")
+)
+```
+
+```json
+{
+ "leaf_a": "unquoted_value_a",
+ "leaf_b": "quoted value b"
+}
+```
+
+## Node Translation
+
+There are a number of different types of nodes.
 
 ### Prefix Named Nodes
 
+These nodes are named before the opening parenthesis.
+
 ```
 (
-    :node_a(
+    :node_a (
         :leaf_a (leaf_value)
     )
 )
 ```
+
+This results in a member of an object pointing to another object.
 
 ```json
 {
@@ -28,6 +62,9 @@ Each CMA file is made up of either nodes or leaves. Leaves contain either an unq
 ```
 
 ### Postfix Named Nodes
+
+Some nodes have the name after the parenthesis, as we see with the 'not_applicable' node below:
+
 ```
 (
 	:globals (
@@ -38,19 +75,21 @@ Each CMA file is made up of either nodes or leaves. Leaves contain either an unq
 )
 ```
 
+These are converted to the same format as the prefix named nodes.
+
 ```json
 {
  "globals": {
   "not_applicable": {
-   "not_applicable": {
-    "leaf": "value"
-   }
+   "leaf": "value"
   }
  }
 }
 ```
 
 ### Doubly Named Nodes
+
+Some nodes have a name both before and after the parenthesis, as we see with the 'rule-base' & '##star_local_v3' node below:
 ```
 (
 	:version (5.9)
@@ -61,6 +100,8 @@ Each CMA file is made up of either nodes or leaves. Leaves contain either an unq
 	)
 )
 ```
+
+In this instance, we create two nodes, with the 'rule-base' node pointing towards the '##star_local_v3' node:
 
 ```json
 {
@@ -76,50 +117,33 @@ Each CMA file is made up of either nodes or leaves. Leaves contain either an unq
 ```
 
 ### Duplicate Keys
-```
-(
-	:node ( 
-		:dup_node(
-			:leaf_a (leaf_a_val)
-		)
-		:dup_node(
-			:leaf_b (leaf_b_val)  
-		)
-	)
-)
-```
 
-```json
-{
- "node": {
-  "dup_node": [
-   {
-    "leaf_a": "leaf_a_val"
-   },
-   {
-    "leaf_b": "leaf_b_val"
-   }
-  ]
- }
-}
-```
-
-
-## Leaf Translation
-
-Leafs are translated directly into key/value pairs, and are members of an object which is their parent node.
+Finally, there are instances where a node contains other nodes that have duplicate names. In the example below we see
+a network object group which has members references in a different part of the file. These nodes are all named 'ReferenceObject'.
 
 ```
 (
-	:leaf_a (unquoted_value_a)
-	:leaf_b ("quoted value b")
-)
+    : (All_Intranet_Gateways
+        :AdminInfo (
+            :ClassName (network_object_group)
+            :table (network_objects)
+        )
+        : (ReferenceObject
+            :Name (Berlin_Gateway)
+            :Table (network_objects)
+            :Uid ("{8AA12D62-B698-4B3B-8A0B-A4CE13A64CAC}")
+        )
+        : (ReferenceObject
+            :Name (London_Gateway)
+            :Table (network_objects)
+            :Uid ("{1C2D9FFC-F412-49B3-85A1-43470D8B4580}")
+        )                                                                                                                                                                                                                                
+    )
+) 
 ```
 
 ```json
-{
- "leaf_a": "unquoted_value_a",
- "leaf_b": "quoted value b"
-}
 ```
+
+
 
