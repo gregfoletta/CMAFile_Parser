@@ -40,9 +40,17 @@ struct cma_entity {
     struct list_head list;
 };
 
-void FATAL_ERROR(char *error_str) { fprintf(stderr, "[FATAL]: %s\n", error_str); exit(1); }
 void ENABLE_DEBUG(void) { debug = 1; }
 void DISABLE_DEBUG(void) { debug = 0; }
+
+void FATAL_ERROR(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    exit(1);
+}
+
 
 void DEBUG_PRINT(FILE *fd, const char *format, ...) {
     va_list args;
@@ -51,6 +59,12 @@ void DEBUG_PRINT(FILE *fd, const char *format, ...) {
     va_end(args);
 }
 
+
+/* Forward declarations */
+json_t *tree_to_json(struct list_head *);
+json_t *leaf_to_json(struct cma_entity *);
+json_t *node_to_json(struct cma_entity *);
+void *set_json_value(json_t *, char *, json_t *);
 
 
 
@@ -153,76 +167,85 @@ void print_entity_list(struct list_head *e, int indent) {
 }
 
 
-json_t *leaf_to_json(struct cma_entity *ent) {
-    return json_string(ent->l_val->value);
+json_t *leaf_to_json(struct cma_entity *leaf) {
+    return json_string(leaf->l_val->value);
 }
 
-json_t *node_to_json(struct list_head *e) {
+json_t *node_to_json(struct cma_entity *node) {
+    char *tmp;
+    struct json_t *secondary_object, *secondary_value;
+
+    /* If there's no primary key, swap, the primary and secondary keys.*/
+    if (strlen(node->key) == 0) { 
+        tmp = node->key;
+        node->key = node->n_val->secondary_key;
+        node->n_val->secondary_key = tmp;
+    }
+
+    /* If there's a primary and secondary key, the secondary becomes 
+     * a node in between the primary key and the value */
+    if (strlen(node->key) && strlen(node->n_val->secondary_key)) {
+        secondary_object = json_object();
+        json_object_set(secondary_object, node->n_val->secondary_key, tree_to_json(node->n_val->list));
+        return secondary_object;
+    } else {
+        return tree_to_json(node->n_val->list);
+    }
 }
 
-json_t *duplicate_to_array(json_t *current_branch, char *key) {
+void *set_json_value(json_t *branch, char *key, json_t *value) {
+    struct json_t *duplicate_entry, *duplicate_array;
 
+    /* Each branch is represented as an object, however there is the possibility of
+     * overlapping keys within a branch. We first check whether they key has already been created.
+     * If it has, then the key points to an array which contain the values. */
 
+    if ((duplicate_entry = json_object_get(branch, key))) {
+        switch (json_typeof(duplicate_entry)) {
+        case JSON_OBJECT:
+        case JSON_STRING:
+            duplicate_array = json_array();
+            json_array_append(duplicate_array, duplicate_entry);
+            json_array_append(duplicate_array, value);
+            json_object_set(branch, key, duplicate_array);
+            break;
+
+        case JSON_ARRAY:
+            json_array_append(duplicate_entry, value);
+            break;
+
+        default:
+            DEBUG_PRINT(stderr, "JSON type error: dup_key_val: %d Key '%s'\n", json_typeof(duplicate_entry), key);
+            FATAL_ERROR("JSON Error: duplicate array entry has invalid type");
+            exit(2);
+        }
+    } else {
+        json_object_set(branch, key, value);
+    }
 }
 
 json_t *tree_to_json(struct list_head *e) {
     json_t *branch, *value, *sec_object, *dup_key_val, *dup_key_array;
-    char *key;
     struct cma_entity *i;
 
     branch = json_object();
 
 	list_for_each_entry(i, e, list) {
-        key = i->key;
-		if (i->type == LEAF) {
+		switch (i->type) {
+        case LEAF:
             value = leaf_to_json(i);
-            value = json_string(ent->l_val->value);
-		} else if (i->type == NODE) {
-
-            /* If there's no primary key, swap, the primary and secondary keys.*/
-            if (strlen(i->key) == 0) { 
-                key = i->n_val->secondary_key; 
-                i->n_val->secondary_key = i->key;
-            }
-
-            /* If there's a primary and secondary key, the secondary becomes 
-             * a node in between the primary key and the value */
-            if (strlen(key) && strlen(i->n_val->secondary_key)) {
-                sec_object = json_object();
-                json_object_set(sec_object, i->n_val->secondary_key, tree_to_json(i->n_val->list));
-                value = sec_object;
-            } else {
-                value = tree_to_json(i->n_val->list);
-            }
-		} 
-
-        /* Each branch is represented as an object, however there is the possibility of
-         * overlapping keys within a branch. We first check whether they key has already been created.
-         * If it has, then the key points to an array which contain the values. */
-        if ((dup_key_val = json_object_get(branch, key))) {
-            /* Is it already an array? */
-            switch (json_typeof(dup_key_val)) {
-            case JSON_OBJECT:
-            case JSON_STRING:
-                dup_key_array = json_array();
-                json_array_append(dup_key_array, dup_key_val);
-                json_array_append(dup_key_array, value);
-                json_object_set(branch, key, dup_key_array);
-                break;
-
-            case JSON_ARRAY:
-                json_array_append(dup_key_val, value);
-                break;
-
-            default:
-                DEBUG_PRINT(stderr, "JSON type error: dup_key_val: %d Key %s, Sec_key %s\n", json_typeof(dup_key_val), i->key, i->n_val->secondary_key);
-                FATAL_ERROR("JSON Error: duplicate array entry has invalid type");
-                exit(2);
-            }
-        } else {
-            json_object_set(branch, key, value);
+            break;
+        case NODE:
+            value = node_to_json(i);
+            break;
+        default:
+            FATAL_ERROR("tree_to_json(): entity %d with key '%s' is neither NODE nor LEAF", i->type, i->key);
+            break;
         }
-	}
+
+        set_json_value(branch, i->key, value);
+    }
+
     return branch;
 }
 
