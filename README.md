@@ -5,7 +5,12 @@ This program takes CheckPoint CMA files and translates them into JSON.
 ## Prerequisites
 
 * [flex](https://github.com/westes/flex) and [bison](https://www.gnu.org/software/bison/).
-* [jannson]() JSON library.
+* [jannson](http://www.digip.org/jansson/) JSON library.
+	* `sudo apt install libjansson4` or `sudo yum install jansson-devel`
+
+## Bug Reports
+
+Please raise any bugs, issues or feature requests through the [issues page](https://github.com/gregfoletta/CMAFile_Parser/issues).
 
 ## Usage
 
