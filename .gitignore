@@ -4,6 +4,5 @@ cma_file.tab.c
 cma_file.tab.h
 cma_parse
 lex.yy.c
-list.h
 tags
 
